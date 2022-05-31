@@ -95,8 +95,13 @@ class LG:
 
         table_info = book_html_table.find_all('tr')
 
-        self.book_image = f"https://libgen.is{table_info[1].a.img['src']}"
+        if table_info[1].a.img['src'][:2] != '..':
+            self.book_image = f"https://libgen.is{table_info[1].a.img['src']}"
+        else:
+            self.book_image = f"https://libgen.is{table_info[1].a.img['src'][2:]}"
+
         self.book_title = table_info[1].find_all('td')[9].a.contents[0]
+
         try:
             self.book_volume = table_info[1].find_all('td')[10].contents[1]
         except:
@@ -157,10 +162,12 @@ class LG:
         download_alts = downloads_table.find_all('li')
 
         embed_lists = [discord.Embed(title=self.book_title, description=f"{self.book_author}\n"
+                                                                        f"***Year***: {self.book_year}\n"
                                                           f"{self.book_series}\n"
-                                                          f"{self.book_edition}\n"
+                                                          f"***Edition***: {self.book_edition}\n"
                                                           f"{self.book_isbn}",
-                                     colour=discord.Colour.random()).set_image(url=self.book_image),
+                                     colour=discord.Colour.random()).set_image(url=self.book_image)
+                           .set_footer(text=f"{self.book_fileType} ({self.book_fileSize})"),
          discord.Embed(description=self.book_desc,
                        colour=discord.Colour.random()),
          discord.Embed(description=f"***Basic***:\n{self.downloads['BASIC']}",
@@ -168,7 +175,8 @@ class LG:
 
         for download in download_alts:
             self.downloads[download.a.contents[0]] = download.a['href']
-            embed_lists.append(discord.Embed(description=f"***{download.a.contents[0]}***\n{download.a['href']}\n",
+            embed_lists.append(discord.Embed(description=f"***{download.a.contents[0]}"
+                                                         f"***\n{download.a['href']}\n",
                                              colour=discord.Colour.random()))
 
 
@@ -194,11 +202,8 @@ if __name__ == '__main__':
 
     @bot.event
     async def on_command_completion(ctx):
-        print(ctx.author)
         if ctx.command.name == 'bookid' and ctx.author == orig_requester:
-            print(ctx.args[1])
             results = request_instance.fetch(ctx.args[1])
-            print(results[1])
             formatter = MySource(results[1], per_page=1)
             menu = menus.MenuPages(formatter)
             await menu.start(ctx)
@@ -214,7 +219,9 @@ if __name__ == '__main__':
         search_results = request_instance.aggregate()[1]
         search_formatter = MySource(search_results, per_page=1)
         search_menu = menus.MenuPages(search_formatter)
-        mes = await ctx.author.send("LG Bot")
+        mes = await ctx.author.send("To choose a book/article, type in\n"
+                                    "!bookid ID. For example, !bookid 325.\nOnly IDs provided in"
+                                    "\nthe search results will return a book.")
         await search_menu.start(ctx, channel=mes.channel)
 
     @bot.command()

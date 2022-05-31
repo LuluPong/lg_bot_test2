@@ -83,7 +83,8 @@ class LG:
                 super_string += f"**File Type**: {row_info[8].contents[0]}\n"
             except:
                 super_string += "No file extension information available\n"
-            embed_lists.append(discord.Embed(description=super_string))
+            embed_lists.append(discord.Embed(description=super_string,
+                                             colour=discord.Colour.random()))
         return self.book_rows_dct, embed_lists
 
     def fetch(self, book_id):
@@ -167,7 +168,7 @@ class LG:
                                                           f"***Edition***: {self.book_edition}\n"
                                                           f"{self.book_isbn}",
                                      colour=discord.Colour.random()).set_image(url=self.book_image)
-                           .set_footer(text=f"{self.book_fileType} ({self.book_fileSize})"),
+                           .set_footer(text=f"{self.book_fileType} ({self.book_fileSize})").set_author(name=f"ID: {book_id}"),
          discord.Embed(description=self.book_desc,
                        colour=discord.Colour.random()),
          discord.Embed(description=f"***Basic***:\n{self.downloads['BASIC']}",
@@ -211,22 +212,88 @@ if __name__ == '__main__':
 
     @bot.command()
     async def lg(ctx, *args):
-        global request_instance, orig_requester
+        global request_instance, orig_requester, id_collection
         print(' '.join(args[:]))
         book_req = ' '.join(args[:])
         orig_requester = ctx.author
         request_instance = LG(book_req)
-        search_results = request_instance.aggregate()[1]
-        search_formatter = MySource(search_results, per_page=1)
+        search_results = request_instance.aggregate()
+        id_collection = search_results[0]
+        search_formatter = MySource(search_results[1], per_page=1)
         search_menu = menus.MenuPages(search_formatter)
-        mes = await ctx.author.send("To choose a book/article, type in\n"
-                                    "!bookid ID. For example, !bookid 325.\nOnly IDs provided in"
-                                    "\nthe search results will return a book.")
-        await search_menu.start(ctx, channel=mes.channel)
+        if len(search_results) > 0:
+            mes = await ctx.author.send(embed=discord.Embed(description="Select a book: "
+                                        "**!bookid ID**\neg. *!bookid 325*\n\nOnly IDs provided in"
+                                        "\nthe search results will return a book.",
+                                                            colour=discord.Colour.dark_red()))
+            await search_menu.start(ctx, channel=mes.channel)
+        else:
+            await ctx.author.send(embed=discord.Embed(description="Your book request did not return any results."
+                                                            "\nThis is caused by one of the following:"
+                                                      "\n1) Improper spelling"
+                            "\n2) Book/article not available on LibGen"
+                            "\n3) Libgen temporarily unavailable\n\n"
+                            "You can try searching by isbn, title, author, or publisher instead.\n\n"
+                                                                  "If libgen is down, please wait at least 2 minutes"
+                                                                  " and retry your request"))
 
     @bot.command()
     async def bookid(ctx, book_id):
-        print(book_id)
+        try:
+            if book_id not in list(id_collection.keys()):
+                await ctx.send(embed=discord.Embed(description="Please select a valid book id.",
+                                                   colour=discord.Colour.dark_red()))
+        except NameError:
+            ctx.send(embed=discord.Embed(description="Please use the !lg command before. Type !lghelp for the"
+                                                     " directions.",
+                                         colour=discord.Colour.dark_red()))
+
+    @bot.command()
+    async def lghelp(ctx):
+        await ctx.send("LG_Books has sent you a DM...")
+        print(ctx.author)
+        await ctx.author.send(embed=discord.Embed(title="LG_Books Bot Guide",
+                                                  description="__**Commands**__\n"
+                                                              "Search by book/article: **!lg book title**\n"
+                                                              "eg. *!lg excel for dummies*\n\n"
+                                                              "Search by author: **!lg author**\n"
+                                                              "eg. *!lg Greg harvey*\n\n"
+                                                              "Search by ISBN: **!lg isbn**\n"
+                                                              "eg. *!lg 9780470037379*\n\n"
+                                                              "Search by publisher: **!lg publisher**\n"
+                                                              "eg. *!lg Wiley*\n\n Select a book: **!bookid id**\neg. "
+                                                              "*!bookid 25276*\n\n"
+                                                              "See the guide/How to use/Directions: **!lghelp**\n\n"
+                                                              "__**Important Notes (Please read)**__\n"
+                                                              "Searches that yield more than one result can be"
+                                                              " navigated using the reaction buttons. [⏮, ◀, ▶, ⏭, ⏹]. "
+                                                              "Do not worry"
+                                                              " about the numbers next to the reaction buttons."
+                                                              "\n⏮: *Shows top search result*\n◀: *Shows"
+                                                              " previous search result (if possible)*\n▶: *Shows next "
+                                                              "search result (if possible)*\n⏭: *Shows last search "
+                                                              "result*\n⏹: *Freezes page, stops buttons from working*\n"
+                                                              "\nSearching by title or ISBN will yield the most"
+                                                              " accurate results. If your search did not work with one method, "
+                                                              "try another.\n\nThe ***!bookid*** command will only"
+                                                              " work if the ***!lg*** command was called before.\n\n**"
+                                                              "ISBNs may vary based on the publisher, book edition, and "
+                                                              "many other factors.**\n\n To reduce the number of get"
+                                                              " requests sent to the site and prevent max_connection "
+                                                              "errors, the bot only retrieves the first page of "
+                                                              "results from the site.\n\n As of now, the bot only works for "
+                                                              "__**non-fiction books**__. Functionality for fiction"
+                                                              " books and scientific articles will be added later...\n\n"
+                                                              "*Please remember this bot is a work in progress. Don't be afraid to "
+                                                              "contact me with any suggestions, complaints, and/or questions*\n\n"
+                                                              "The website used to "
+                                                              "retrieve books is: *https://libgen.is*",
+                                                  colour=discord.Colour.dark_red()))
+
+    @bot.command()
+    async def lgrequest(ctx, *args):
+        print(args[:], bot.owner_ids, "WHY WAS JAMES SITTING IN THE GIANT PEACH TREE?\nremember, discord has a limit for how many"
+                       "characters can be sent per message...")
 
     bot.run(os.getenv("TOKEN"))
 

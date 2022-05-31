@@ -203,11 +203,15 @@ if __name__ == '__main__':
 
     @bot.event
     async def on_command_completion(ctx):
-        if ctx.command.name == 'bookid' and ctx.author == orig_requester:
-            results = request_instance.fetch(ctx.args[1])
-            formatter = MySource(results[1], per_page=1)
-            menu = menus.MenuPages(formatter)
-            await menu.start(ctx)
+        try:
+            if ctx.command.name == 'bookid' and ctx.author == orig_requester:
+                    results = request_instance.fetch(ctx.args[1])
+                    formatter = MySource(results[1], per_page=1)
+                    menu = menus.MenuPages(formatter)
+                    await menu.start(ctx)
+        except:
+            "Do something...?"
+
 
 
     @bot.command()
@@ -244,7 +248,8 @@ if __name__ == '__main__':
                 await ctx.send(embed=discord.Embed(description="Please select a valid book id.",
                                                    colour=discord.Colour.dark_red()))
         except NameError:
-            ctx.send(embed=discord.Embed(description="Please use the !lg command before. Type !lghelp for the"
+            no_bookid = True
+            await ctx.send(embed=discord.Embed(description="Please use the !lg command before. \nType **!lghelp** for the"
                                                      " directions.",
                                          colour=discord.Colour.dark_red()))
 

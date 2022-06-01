@@ -269,6 +269,9 @@ if __name__ == '__main__':
                                                               "eg. *!lg Wiley*\n\n Select a book: **!bookid id**\neg. "
                                                               "*!bookid 25276*\n\n"
                                                               "See the guide/How to use/Directions: **!lghelp**\n\n"
+                                                              "Requests/Inquiries/Complaints: **!lgrequest inquiry**\neg. "
+                                                              "*!lgrequest why was james sitting in the giant peach tree?*"
+                                                              "\nFYI: All inquiries will be sent with user info\n\n"
                                                               "__**Important Notes (Please read)**__\n"
                                                               "Searches that yield more than one result can be"
                                                               " navigated using the reaction buttons. [⏮, ◀, ▶, ⏭, ⏹]. "
@@ -297,8 +300,11 @@ if __name__ == '__main__':
 
     @bot.command()
     async def lgrequest(ctx, *args):
-        print(args[:], bot.owner_ids, "WHY WAS JAMES SITTING IN THE GIANT PEACH TREE?\nremember, discord has a limit for how many"
-                       "characters can be sent per message...")
+        bot_info = await bot.application_info()
+        bot_owner = bot_info.owner
+        await bot_owner.send(f"{ctx.author}\n\n**Inquiry**:\n{' '.join(args[:])}")
+        #print(args[:] , "WHY WAS JAMES SITTING IN THE GIANT PEACH TREE?\nremember, discord has a limit for how many"
+        #               "characters can be sent per message...")
 
     bot.run(os.getenv("TOKEN"))
 

@@ -217,7 +217,6 @@ if __name__ == '__main__':
     @bot.command()
     async def lg(ctx, *args):
         global request_instance, orig_requester, id_collection
-        print(' '.join(args[:]))
         book_req = ' '.join(args[:])
         orig_requester = ctx.author
         request_instance = LG(book_req)
@@ -248,7 +247,6 @@ if __name__ == '__main__':
                 await ctx.send(embed=discord.Embed(description="Please select a valid book id.",
                                                    colour=discord.Colour.dark_red()))
         except NameError:
-            no_bookid = True
             await ctx.send(embed=discord.Embed(description="Please use the !lg command before. \nType **!lghelp** for the"
                                                      " directions.",
                                          colour=discord.Colour.dark_red()))
@@ -256,7 +254,6 @@ if __name__ == '__main__':
     @bot.command()
     async def lghelp(ctx):
         await ctx.send("LG_Books has sent you a DM...")
-        print(ctx.author)
         await ctx.author.send(embed=discord.Embed(title="LG_Books Bot Guide",
                                                   description="__**Commands**__\n"
                                                               "Search by book/article: **!lg book title**\n"

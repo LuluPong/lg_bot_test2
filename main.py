@@ -10,9 +10,11 @@ import discord
 from discord.ext import commands
 from discord.ext import menus
 import requests
+import lgNonfiction
+import lgFiction
 
 
-class LG_Fiction:
+"""class LG_Fiction:
     def __init__(self, book_request):
         self.book_request = book_request
         self.fict_book_rows_dict = dict()
@@ -117,10 +119,10 @@ class LG_Fiction:
                                             colour=discord.Colour.random()))
             i += 1
 
-        return downloads, embed_list
+        return downloads, embed_list"""
 
 
-class LG:
+"""class LG:
     def __init__(self, book_request):
         self.book_request = book_request
         self.book_rows_dct = dict()
@@ -289,7 +291,7 @@ class LG:
                                              colour=discord.Colour.random()))
 
 
-        return self.downloads, embed_lists
+        return self.downloads, embed_lists"""
 
 class MySource(menus.ListPageSource):
     async def format_page(self, menu, entries):
@@ -321,6 +323,10 @@ if __name__ == '__main__':
                 formatter = MySource(results[1], per_page=1)
                 menu = menus.MenuPages(formatter)
                 await menu.start(ctx)
+                try:
+                    print(f"{ctx.author} successfully requested {request_instance.book_title}")
+                except:
+                    print(f"{ctx.author} successfully requested {fict_request_instance.book_title}")
         except:
             print("bookid failed...")
 
@@ -331,7 +337,7 @@ if __name__ == '__main__':
         global request_instance, orig_requester, id_collection
         book_req = ' '.join(args[:])
         orig_requester = ctx.author
-        request_instance = LG(book_req)
+        request_instance = lgNonfiction.LG(book_req)
         search_results = request_instance.aggregate()
         id_collection = search_results[0]
         search_formatter = MySource(search_results[1], per_page=1)
@@ -420,7 +426,7 @@ if __name__ == '__main__':
     async def lgfiction(ctx, *args):
         global id_collection, fict_request_instance, orig_requester
         fict_book_req = ' '.join(args[:])
-        fict_request_instance = LG_Fiction(fict_book_req)
+        fict_request_instance = lgFiction.LG_Fiction(fict_book_req)
         try:
             search_results = fict_request_instance.aggregate()
         except:

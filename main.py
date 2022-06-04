@@ -421,14 +421,29 @@ if __name__ == '__main__':
         global id_collection, fict_request_instance, orig_requester
         fict_book_req = ' '.join(args[:])
         fict_request_instance = LG_Fiction(fict_book_req)
-        search_results = fict_request_instance.aggregate()
-        id_collection = search_results[0]
-        fict_search_formatter = MySource(search_results[1], per_page=1)
-        fict_search_menu = menus.MenuPages(fict_search_formatter)
-        orig_requester = ctx.author
-        await ctx.author.send(embed=discord.Embed(description="Select a bookid"))
+        try:
+            search_results = fict_request_instance.aggregate()
+        except:
+            search_results = 'null'
+        if search_results != 'null':
+            id_collection = search_results[0]
+            fict_search_formatter = MySource(search_results[1], per_page=1)
+            fict_search_menu = menus.MenuPages(fict_search_formatter)
+            orig_requester = ctx.author
+            await ctx.author.send(embed=discord.Embed(description="Select a bookid\n*eg. !bookid 2*",
+                                                      colour=discord.Colour.dark_red()))
 
-        await fict_search_menu.start(ctx)
+            await fict_search_menu.start(ctx)
+        else:
+            await ctx.author.send(embed=discord.Embed(description="Your book request did not return any results."
+                                                            "\nThis is caused by one of the following:"
+                                                      "\n1) Improper spelling"
+                            "\n2) Book/article not available on LibGen"
+                            "\n3) Libgen temporarily unavailable\n\n"
+                            "You can try searching by isbn, title, author, or publisher instead.\n\n"
+                                                                  "If libgen is down, please wait at least 2 minutes"
+                                                                  " and retry your request",
+                                                colour=discord.Colour.dark_red()))
 
     bot.run(os.getenv("TOKEN"))
 

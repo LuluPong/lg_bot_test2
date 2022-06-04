@@ -35,34 +35,41 @@ class LG_Fiction:
             #print(row_info[2], row_info[0])
             self.fict_book_rows_dict[str(result_num)] = f"https://libgen.is{row_info[2].a['href']}"
 
-            super_string = str(result_num) + "\n"
-            super_string += row_info[2].a.contents[0] + "\n"
+            super_string = f"**ID**: *{result_num}*\n"
+            super_string += f"***{row_info[2].a.contents[0]}***\n**Authors**: "
 
             try:
                 #print(row_info[0])
                 for authors in row_info[0].find_all('li'):
-                    super_string += authors.a.contents[0] + "\n"
+                    super_string += f"{authors.a.contents[0]}\n"
             except:
                 super_string += "No author info available\n"
 
             try:
-                super_string += row_info[1].contents[0] + "\n"
+                super_string += f"**Series**: {row_info[1].contents[0]}\n"
+                self.book_series = row_info[1].contents[0]
             except:
                 super_string += "No series info available\n"
+                self.book_series = "No series info available"
 
             try:
-                super_string += row_info[3].contents[0] + "\n"
+                super_string += f"**Language**: {row_info[3].contents[0]}\n"
             except:
                 super_string += "Language info not available\n"
 
             try:
-                super_string += row_info[4].contents[0].split('/')[0]
-                super_string += row_info[4].contents[0].split('/')[1] + "\n"
+                super_string += f"**File Type**: {row_info[4].contents[0].split('/')[0]}\n"
+                self.book_fileType = row_info[4].contents[0].split('/')[0]
+                super_string += f"**File Size**: {row_info[4].contents[0].split('/')[1]}\n"
+                self.book_fileSize = row_info[4].contents[0].split('/')[1] + "\n"
             except:
                 super_string += "No file type or size info available"
+                self.book_fileSize = "No file size info available"
+                self.book_fileType = "No file type info available"
 
-            print(super_string)
-            embed_list.append(discord.Embed(description=super_string))
+            #print(super_string)
+            embed_list.append(discord.Embed(description=super_string,
+                                            colour=discord.Colour.random()))
 
 
             result_num += 1
@@ -71,7 +78,46 @@ class LG_Fiction:
         return self.fict_book_rows_dict, embed_list
 
     def fetch(self, book_id):
-        return 'b'
+        book_id = book_id.strip()
+        book_page = requests.get(self.fict_book_rows_dict[book_id]).content
+
+        embed_list = []
+
+        book_HTML = BeautifulSoup(book_page, 'html.parser')
+        book_HTML_table = book_HTML.find("table", "record")
+
+        self.book_title = book_HTML_table.find("td", "record_title").contents[0]
+        image = book_HTML.find('div', 'record_side').img['src']
+        self.book_image = f"https://libgen.is{image}"
+
+        try:
+            author_list = ''
+            authors = book_HTML_table.find('ul', 'catalog_authors')
+            for author in authors.find_all('li'):
+                author_list += author.a.contents[0] + "\n"
+            self.book_author = author_list
+        except:
+            self.book_author = "No author info available"
+
+        download_list = book_HTML_table.find('ul', 'record_mirrors')
+        download_links = download_list.find_all('a')
+
+        embed_list.append(discord.Embed(title=self.book_title,
+                                        description=f"**Author**: {self.book_author} **Series**: {self.book_series}",
+                                        colour=discord.Colour.random()).set_footer(text=f"{self.book_fileType} "
+                                                                                        f"{self.book_fileSize}").
+                          set_image(url=self.book_image))
+
+        downloads = dict()
+        i = 0
+        while i < 2:
+            downloads[download_links[i].contents[0]] = download_links[i]['href']
+            embed_list.append(discord.Embed(title=download_links[i].contents[0],
+                                            description=download_links[i]['href'],
+                                            colour=discord.Colour.random()))
+            i += 1
+
+        return downloads, embed_list
 
 
 class LG:
@@ -267,12 +313,16 @@ if __name__ == '__main__':
     async def on_command_completion(ctx):
         try:
             if ctx.command.name == 'bookid' and ctx.author == orig_requester:
+                try:
                     results = request_instance.fetch(ctx.args[1])
-                    formatter = MySource(results[1], per_page=1)
-                    menu = menus.MenuPages(formatter)
-                    await menu.start(ctx)
+                except:
+                    results = fict_request_instance.fetch(ctx.args[1])
+
+                formatter = MySource(results[1], per_page=1)
+                menu = menus.MenuPages(formatter)
+                await menu.start(ctx)
         except:
-            "Do something...?"
+            print("bookid failed...")
 
 
 
@@ -305,7 +355,7 @@ if __name__ == '__main__':
     @bot.command()
     async def bookid(ctx, book_id):
         try:
-            print(id_collection.keys())
+            #print(id_collection.keys())
             if book_id not in list(id_collection.keys()):
                 await ctx.send(embed=discord.Embed(description="Please select a valid book id.",
                                                    colour=discord.Colour.dark_red()))
@@ -367,16 +417,17 @@ if __name__ == '__main__':
         #               "characters can be sent per message...")
 
     @bot.command()
-    #WORK ON SHOWING BOOKID RESULTS
     async def lgfiction(ctx, *args):
-        global id_collection, search_results
+        global id_collection, fict_request_instance, orig_requester
         fict_book_req = ' '.join(args[:])
-        print(fict_book_req)
         fict_request_instance = LG_Fiction(fict_book_req)
         search_results = fict_request_instance.aggregate()
         id_collection = search_results[0]
         fict_search_formatter = MySource(search_results[1], per_page=1)
         fict_search_menu = menus.MenuPages(fict_search_formatter)
+        orig_requester = ctx.author
+        await ctx.author.send(embed=discord.Embed(description="Select a bookid"))
+
         await fict_search_menu.start(ctx)
 
     bot.run(os.getenv("TOKEN"))

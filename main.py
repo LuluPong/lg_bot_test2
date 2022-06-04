@@ -12,6 +12,68 @@ from discord.ext import menus
 import requests
 
 
+class LG_Fiction:
+    def __init__(self, book_request):
+        self.book_request = book_request
+        self.fict_book_rows_dict = dict()
+
+    def aggregate(self):
+        search_url = self.book_request.replace(' ', '+')
+        results = requests.get(f"https://libgen.is/fiction/?q={search_url}&criteria=&language=&format=").content
+
+        results_parsed = BeautifulSoup(results, 'html.parser')
+        books_table = results_parsed.table
+
+        book_rows = books_table.find_all('tr')
+        book_rows.pop(0)
+
+        embed_list = []
+
+        result_num = 1
+        for row in book_rows:
+            row_info = row.find_all('td')
+            #print(row_info[2], row_info[0])
+            self.fict_book_rows_dict[str(result_num)] = f"https://libgen.is{row_info[2].a['href']}"
+
+            super_string = str(result_num) + "\n"
+            super_string += row_info[2].a.contents[0] + "\n"
+
+            try:
+                #print(row_info[0])
+                for authors in row_info[0].find_all('li'):
+                    super_string += authors.a.contents[0] + "\n"
+            except:
+                super_string += "No author info available\n"
+
+            try:
+                super_string += row_info[1].contents[0] + "\n"
+            except:
+                super_string += "No series info available\n"
+
+            try:
+                super_string += row_info[3].contents[0] + "\n"
+            except:
+                super_string += "Language info not available\n"
+
+            try:
+                super_string += row_info[4].contents[0].split('/')[0]
+                super_string += row_info[4].contents[0].split('/')[1] + "\n"
+            except:
+                super_string += "No file type or size info available"
+
+            print(super_string)
+            embed_list.append(discord.Embed(description=super_string))
+
+
+            result_num += 1
+
+
+        return self.fict_book_rows_dict, embed_list
+
+    def fetch(self, book_id):
+        return 'b'
+
+
 class LG:
     def __init__(self, book_request):
         self.book_request = book_request
@@ -243,6 +305,7 @@ if __name__ == '__main__':
     @bot.command()
     async def bookid(ctx, book_id):
         try:
+            print(id_collection.keys())
             if book_id not in list(id_collection.keys()):
                 await ctx.send(embed=discord.Embed(description="Please select a valid book id.",
                                                    colour=discord.Colour.dark_red()))
@@ -302,6 +365,19 @@ if __name__ == '__main__':
         await bot_owner.send(f"{ctx.author}\n\n**Inquiry**:\n{' '.join(args[:])}")
         #print(args[:] , "WHY WAS JAMES SITTING IN THE GIANT PEACH TREE?\nremember, discord has a limit for how many"
         #               "characters can be sent per message...")
+
+    @bot.command()
+    #WORK ON SHOWING BOOKID RESULTS
+    async def lgfiction(ctx, *args):
+        global id_collection, search_results
+        fict_book_req = ' '.join(args[:])
+        print(fict_book_req)
+        fict_request_instance = LG_Fiction(fict_book_req)
+        search_results = fict_request_instance.aggregate()
+        id_collection = search_results[0]
+        fict_search_formatter = MySource(search_results[1], per_page=1)
+        fict_search_menu = menus.MenuPages(fict_search_formatter)
+        await fict_search_menu.start(ctx)
 
     bot.run(os.getenv("TOKEN"))
 

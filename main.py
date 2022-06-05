@@ -60,24 +60,27 @@ if __name__ == '__main__':
         try:
             if ctx.command.name == 'bookid' and ctx.author == orig_requester:
                 try:
+                    success_mes = 1
                     results = request_instance.fetch(ctx.args[1])
                 except Exception:
                     try:
+                        success_mes = 2
                         results = sci_request_instance.fetch(ctx.args[1])
                     except Exception:
+                        success_mes = 3
                         results = fict_request_instance.fetch(ctx.args[1])
 
                 formatter = MySource(results[1], per_page=1)
                 menu = menus.MenuPages(formatter)
                 await menu.start(ctx)
-                try:
+                if success_mes == 1:
                     print(f"{ctx.author} successfully requested {request_instance.book_title}")
-                except Exception:
-                    print(f"{ctx.author} successfully requested {fict_request_instance.book_title}")
-                except:
+                elif success_mes == 2:
                     print(f"{ctx.author} successfully requested {sci_request_instance.article_title}")
-        except Exception:
-            print("bookid failed...")
+                else:
+                    print(f"{ctx.author} successfully requested {fict_request_instance.book_title}")
+        except Exception as e:
+            print("bookid failed...", e)
 
 
     @bot.command()

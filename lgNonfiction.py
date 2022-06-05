@@ -98,7 +98,7 @@ class LG:
             self.book_volume = "No volumes"
 
         try:
-            self.book_author = table_info[10].b.contents[0]
+            self.book_author = table_info[10].b.contents[0].replace(',', '\n')
         except:
             self.book_author = "No author specified"
         try:
@@ -154,11 +154,10 @@ class LG:
 
         download_alts = downloads_table.find_all('li')
 
-        embed_lists = [discord.Embed(title=self.book_title, description=f"{self.book_author}\n"
-                                                                        f"***Year***: {self.book_year}\n"
-                                                                        f"{self.book_series}\n"
-                                                                        f"***Edition***: {self.book_edition}\n"
-                                                                        f"{self.book_isbn}",
+        book_info = f"{self.book_author}\n***Year***: {self.book_year}\n{self.book_series}\n***Edition***: " \
+                    f"{self.book_edition}\n{self.book_isbn}"
+
+        embed_lists = [discord.Embed(title=self.book_title, description=book_info,
                                      colour=discord.Colour.random()).set_image(url=self.book_image)
                        .set_footer(text=f"{self.book_fileType} ({self.book_fileSize})").set_author(
             name=f"ID: {book_id}"),

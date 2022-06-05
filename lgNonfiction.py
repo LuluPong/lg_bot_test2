@@ -91,9 +91,7 @@ class LG:
             self.book_image = f"https://libgen.is{table_info[1].a.img['src']}"
         else:
             self.book_image = f"https://libgen.is{table_info[1].a.img['src'][2:]}"
-
         self.book_title = table_info[1].find_all('td')[9].a.contents[0]
-
         try:
             self.book_volume = table_info[1].find_all('td')[10].contents[1]
         except:
@@ -107,13 +105,15 @@ class LG:
             self.book_series = table_info[11].contents[1].contents[0]
         except:
             self.book_series = "No series"
-
         try:
             self.book_publisher = table_info[12].contents[1].contents[0]
         except:
             self.book_publisher = "No publisher information available"
 
-        self.book_year = table_info[13].contents[1].contents[0]
+        try:
+            self.book_year = table_info[13].contents[1].contents[0]
+        except:
+            self.book_year = "No year info available"
         try:
             self.book_edition = table_info[13].contents[4].contents[0]
 
@@ -131,6 +131,7 @@ class LG:
             self.book_fileSize = table_info[18].contents[1].contents[0]
         except:
             self.book_fileSize = "No file size provided"
+
         try:
             self.book_fileType = table_info[18].contents[4].contents[0]
         except:
@@ -143,6 +144,7 @@ class LG:
             self.book_desc = table_info[31].td.contents[0]
         except:
             self.book_desc = "No description available"
+
 
         fetch_book = requests.get(table_info[1].a['href']).content
         fetch_book_parsed = BeautifulSoup(fetch_book, 'html.parser')
@@ -170,6 +172,5 @@ class LG:
             embed_lists.append(discord.Embed(description=f"***{download.a.contents[0]}"
                                                          f"***\n{download.a['href']}\n",
                                              colour=discord.Colour.random()))
-
 
         return self.downloads, embed_lists

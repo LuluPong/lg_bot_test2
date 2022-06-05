@@ -1,7 +1,7 @@
-
 from bs4 import BeautifulSoup
 import requests
 import discord
+
 
 class LG:
     def __init__(self, book_request):
@@ -34,10 +34,10 @@ class LG:
                     super_string += f"   {author.contents[0]}\n"
             except:
                 super_string += "No author specified\n"
-            #Checks if ISBN info available in table row
+            # Checks if ISBN info available in table row
             try:
                 if row_info[2].find(id=row_info[0].contents[0]).i.contents[0][0] == '[':
-                    #Checks for editions
+                    # Checks for editions
                     super_string += f"**Edition and ISBN**: \n" \
                                     f"{row_info[2].find(id=row_info[0].contents[0]).i.contents[0]} " \
                                     f"{row_info[2].find(id=row_info[0].contents[0]).contents[4].i.contents[0]}\n"
@@ -145,7 +145,6 @@ class LG:
         except:
             self.book_desc = "No description available"
 
-
         fetch_book = requests.get(table_info[1].a['href']).content
         fetch_book_parsed = BeautifulSoup(fetch_book, 'html.parser')
 
@@ -157,15 +156,16 @@ class LG:
 
         embed_lists = [discord.Embed(title=self.book_title, description=f"{self.book_author}\n"
                                                                         f"***Year***: {self.book_year}\n"
-                                                          f"{self.book_series}\n"
-                                                          f"***Edition***: {self.book_edition}\n"
-                                                          f"{self.book_isbn}",
+                                                                        f"{self.book_series}\n"
+                                                                        f"***Edition***: {self.book_edition}\n"
+                                                                        f"{self.book_isbn}",
                                      colour=discord.Colour.random()).set_image(url=self.book_image)
-                           .set_footer(text=f"{self.book_fileType} ({self.book_fileSize})").set_author(name=f"ID: {book_id}"),
-         discord.Embed(description=self.book_desc,
-                       colour=discord.Colour.random()),
-         discord.Embed(description=f"***Basic***:\n{self.downloads['BASIC']}",
-                       colour=discord.Colour.random())]
+                       .set_footer(text=f"{self.book_fileType} ({self.book_fileSize})").set_author(
+            name=f"ID: {book_id}"),
+            discord.Embed(description=self.book_desc,
+                          colour=discord.Colour.random()),
+            discord.Embed(description=f"***Basic***:\n{self.downloads['BASIC']}",
+                          colour=discord.Colour.random())]
 
         for download in download_alts:
             self.downloads[download.a.contents[0]] = download.a['href']

@@ -105,7 +105,7 @@ if __name__ == '__main__':
     async def lgsci(ctx, *args):
         global sci_request_instance, id_collection, orig_requester
         article_req = ' '.join(args[:])
-        sci_request_instance = lgScientific.lgScience(article_req)
+        sci_request_instance = lgScientific.LgScience(article_req)
         search_results = sci_request_instance.aggregate()
         id_collection = search_results[0]
         orig_requester = ctx.author
@@ -137,21 +137,19 @@ if __name__ == '__main__':
                                                   description=help_msg,
                                                   colour=discord.Colour.dark_red()))
 
-
     @bot.command()
     async def lgrequest(ctx, *args):
         bot_info = await bot.application_info()
         bot_owner = bot_info.owner
         await bot_owner.send(f"{ctx.author}\n\n**Inquiry**:\n{' '.join(args[:])}")
-        # print(args[:] , "WHY WAS JAMES SITTING IN THE GIANT PEACH TREE?\nremember, discord has a limit for how many"
-        #               "characters can be sent per message...")
+        # print(args[:] , "WHY WAS JAMES SITTING IN THE GIANT PEACH TREE?")
 
 
     @bot.command()
     async def lgfiction(ctx, *args):
         global id_collection, fict_request_instance, orig_requester
         fict_book_req = ' '.join(args[:])
-        fict_request_instance = lgFiction.LG_Fiction(fict_book_req)
+        fict_request_instance = lgFiction.LGFiction(fict_book_req)
         try:
             search_results = fict_request_instance.aggregate()
         except:

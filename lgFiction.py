@@ -3,7 +3,8 @@ from bs4 import BeautifulSoup
 import requests
 import discord
 
-class LG_Fiction:
+
+class LGFiction:
     def __init__(self, book_request):
         self.book_request = book_request
         self.fict_book_rows_dict = dict()
@@ -23,14 +24,12 @@ class LG_Fiction:
         result_num = 1
         for row in book_rows:
             row_info = row.find_all('td')
-            #print(row_info[2], row_info[0])
             self.fict_book_rows_dict[str(result_num)] = f"https://libgen.is{row_info[2].a['href']}"
 
             super_string = f"**ID**: *{result_num}*\n"
             super_string += f"***{row_info[2].a.contents[0]}***\n**Authors**: "
 
             try:
-                #print(row_info[0])
                 for authors in row_info[0].find_all('li'):
                     super_string += f"{authors.a.contents[0]}\n"
             except:
@@ -58,14 +57,10 @@ class LG_Fiction:
                 self.book_fileSize = "No file size info available"
                 self.book_fileType = "No file type info available"
 
-            #print(super_string)
             embed_list.append(discord.Embed(description=super_string,
                                             colour=discord.Colour.random()))
 
-
             result_num += 1
-
-
         return self.fict_book_rows_dict, embed_list
 
     def fetch(self, book_id):
@@ -74,23 +69,23 @@ class LG_Fiction:
 
         embed_list = []
 
-        book_HTML = BeautifulSoup(book_page, 'html.parser')
-        book_HTML_table = book_HTML.find("table", "record")
+        book_html = BeautifulSoup(book_page, 'html.parser')
+        book_html_table = book_html.find("table", "record")
 
-        self.book_title = book_HTML_table.find("td", "record_title").contents[0]
-        image = book_HTML.find('div', 'record_side').img['src']
+        self.book_title = book_html_table.find("td", "record_title").contents[0]
+        image = book_html.find('div', 'record_side').img['src']
         self.book_image = f"https://libgen.is{image}"
 
         try:
             author_list = ''
-            authors = book_HTML_table.find('ul', 'catalog_authors')
+            authors = book_html_table.find('ul', 'catalog_authors')
             for author in authors.find_all('li'):
                 author_list += author.a.contents[0] + "\n"
             self.book_author = author_list
         except:
             self.book_author = "No author info available"
 
-        download_list = book_HTML_table.find('ul', 'record_mirrors')
+        download_list = book_html_table.find('ul', 'record_mirrors')
         download_links = download_list.find_all('a')
 
         embed_list.append(discord.Embed(title=self.book_title,

@@ -2,7 +2,8 @@ from bs4 import BeautifulSoup
 import discord
 import requests
 
-class lgScience:
+
+class LgScience:
     def __init__(self, article_request):
         self.article_request = article_request
         self.article_row_dict = dict()
@@ -19,7 +20,6 @@ class lgScience:
         article_count = 1
         for row in article_rows:
             row_info = row.find_all('td')
-            #print(row_info)
             self.article_row_dict[str(article_count)] = row_info[1].p.a['href']
             super_string = f"**ID**: {article_count}\n"
 
@@ -100,9 +100,9 @@ class lgScience:
         except:
             self.article_fileSize = "No size info available\n"
 
-        desc = f"**{self.article_title}**\n**Authors**:\n{self.article_authors}\n**Journal**: {self.article_journal}\n" \
-               f"(Volume {self.article_volume} Issue {self.article_issue})\n**Publisher**: {self.article_publisher}" \
-               f"**DOI**: {self.article_DOI}"
+        desc = f"**{self.article_title}**\n**Authors**:\n{self.article_authors}\n**Journal**: {self.article_journal}" \
+               f"\n(Volume {self.article_volume} Issue {self.article_issue})\n**Publisher**: {self.article_publisher}" \
+               f"\n**DOI**: {self.article_DOI}"
 
         embed_list.append(discord.Embed(description=desc,
                                         colour=discord.Colour.random())

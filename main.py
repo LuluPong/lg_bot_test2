@@ -34,25 +34,25 @@ if __name__ == '__main__':
 
     help_msg = "__**Commands**__\nSearch by book/article: **!lg book title**\neg. *!lg excel for dummies*\n\nSearch " \
                "by author: **!lg author**\neg. *!lg Greg harvey*\n\nSearch by ISBN: **!lg isbn**\neg. " \
-               "*!lg 9780470037379*\n\nSearch by publisher: **!lg publisher**\neg. *!lg Wiley*\nFor fiction books, " \
-               "replace !lg with !lgfiction. For scientific articles, replace !lg with !lgsci. ISBN searches do not " \
-               "work for fiction or scientific articles.\n\n Select a book: **!bookid id**\neg. *!bookid 25276*\nFor " \
-               "**scientific articles**, replace !bookid with *!aid*\n\nSee the guide/How to use/Directions: " \
-               "**!lghelp**\n\nRequests/Inquiries/Complaints: **!lgrequest inquiry**\neg. *!lgrequest why was james " \
-               "sitting in the giant peach tree?*\nFYI: All inquiries will be sent with user info\n\n__" \
-               "**Important Notes (Please read)**__\nSearches that yield more than one result can" \
-               " be navigated using the reaction buttons. [⏮, ◀, ▶, ⏭, ⏹]. Do not worry about the numbers next to " \
-               "the reaction buttons.\n⏮: *Shows top search result*\n◀: *Shows previous search result (if possible)*" \
-               "\n▶: *Shows next search result (if possible)*\n⏭: *Shows last search result*\n⏹: *Freezes page, " \
-               "stops buttons from working*\n\nSearching by title or ISBN will yield the most accurate results. If " \
-               "your search did not work with one method, try another.\n\nThe fiction search is VERY limited. ISBN " \
-               "searches will not work with it.\n\nThe ***!bookid*** command will only work if the " \
-               "***!lg*** command was called before.\nSame applies for the ***!aid*** command and the !lgsci command\n\n" \
-               "**ISBNs may vary based on the publisher, book edition," \
-               " and many other factors.**\n\n To reduce the number of get requests sent to the site and prevent " \
-               "max_connection errors, the bot only retrieves the first page of results from the site.\n\nDon't be " \
-               "afraid to contact me with any suggestions, complaints, and/or questions*\n\nThe website used to " \
-               "retrieve books is: *https://libgen.is*. There are other mirrors available."
+               "*!lg 9780470037379*\n\nSearch by publisher: **!lg publisher**\neg. *!lg Wiley*\n\nFor fiction books, " \
+               "replace *!lg* with ***!lgfiction***. For scientific articles, replace *!lg* with ***!lgsci***. ISBN searches do not " \
+               "work for fiction or scientific articles; **HOWEVER**, scientific articles can be searched for by DOIs" \
+               "\n\n Select a book: **!bookid id**\neg. *!bookid 25276*\nFor **scientific articles**, replace !bookid" \
+               " with *!aid*\n\nSee the guide/How to use/Directions: **!lghelp**\n\nRequests/Inquiries/Complaints: " \
+               "**!lgrequest inquiry**\neg. *!lgrequest why was james sitting in the giant peach tree?*\nFYI: All " \
+               "inquiries will be sent with user info\n\n__**Important Notes (Please read)**__\nSearches that yield " \
+               "more than one result can be navigated using the reaction buttons. [⏮, ◀, ▶, ⏭, ⏹]. Do not worry " \
+               "about the numbers next to the reaction buttons.\n⏮: *Shows top search result*\n◀: *Shows previous " \
+               "search result (if possible)*\n▶: *Shows next search result (if possible)*\n⏭: *Shows last search " \
+               "result*\n⏹: *Freezes page, stops buttons from working*\n\nSearching by title or ISBN will yield the " \
+               "most accurate results. If your search did not work with one method, try another.\n\nThe fiction " \
+               "search is VERY limited. ISBN searches will not work with it.\n\nThe ***!bookid*** command will only " \
+               "work if the ***!lg*** command was called before.\nSame applies for the ***!aid*** command and the " \
+               "!lgsci command\n\n**ISBNs may vary based on the publisher, book edition, and many other factors.**\n" \
+               "\n To reduce the number of get requests sent to the site and prevent max_connection errors, the bot " \
+               "only retrieves the first page of results from the site.\n\nDon't be afraid to contact me with any " \
+               "suggestions, complaints, and/or questions*\n\nThe website used to retrieve books is: " \
+               "*https://libgen.is*. There are other mirrors available."
 
 
     @bot.event
@@ -66,12 +66,11 @@ if __name__ == '__main__':
             if ctx.command.name == 'bookid' and ctx.author == orig_requester:
                 results = ''
                 try:
-                    success_mes = 1
                     results = request_instance.fetch(ctx.args[1])
+                    success_mes = 1
                 except Exception:
-                    print('not lg request')
-                    success_mes = 2
                     results = fict_request_instance.fetch(ctx.args[1])
+                    success_mes = 2
 
                 formatter = MySource(results[1], per_page=1)
                 menu = menus.MenuPages(formatter)
@@ -135,23 +134,26 @@ if __name__ == '__main__':
             if book_id not in list(id_collection.keys()):
                 await ctx.send(embed=discord.Embed(description="Please select a valid book id.",
                                                    colour=discord.Colour.dark_red()))
+                print(f"{ctx.author} unsuccessful book request. Invalid book id (!aid)...")
         except NameError:
             await ctx.send(
                 embed=discord.Embed(description="Please use the !lg or !lgfiction command before. \nType **!lghelp** "
                                                 "for the directions.",
                                     colour=discord.Colour.dark_red()))
+            print(f"{ctx.author} unsuccessful book request. Invalid command...")
 
     @bot.command()
     async def aid(ctx, article_id):
-        print('testing articles')
         try:
             if article_id not in list(id_collection.keys()):
                 await ctx.author.send(embed=discord.Embed(description="Please select a valid article id.",
                                                           colour=discord.Colour.dark_red()))
+                print(f"{ctx.author} unsuccessful article request. Invalid article id (!aid)...")
         except NameError:
             await ctx.author.send(embed=discord.Embed(description="Please use the !lgsci command before.\nType "
                                                                   "**!lghelp** for directions.",
                                                       colour=discord.Colour.dark_red()))
+            print(f"{ctx.author} unsuccessful article request. Invalid command...")
 
     @bot.command()
     async def lghelp(ctx):
